@@ -1,0 +1,13 @@
+{
+  "name": "noteful-app-v1",
+  "version": "1.0.0",
+  "description": "FullStack (Node, Express, Mocha and Chai) w/ RESTful API Challeng",
+  "license": "MIT",
+  "repository": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+
+  }
+}
