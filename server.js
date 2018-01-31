@@ -1,68 +1,23 @@
 'use strict';
 
-const data = require('./db/notes');
-const simDB = require('./db/simDB');
-const notes = simDB.initialize(data);
 
 const { PORT } = require('./config');
 const { requestLogger } = require('./request-logger');
-
 const express = require('express');
+const morgan = require('morgan');
+const notesRouter = require('./routers/notes.router');
 const app = express();
 
+
+
+app.use(morgan('dev'));
 app.use(express.static('public'));
 
 app.use(express.json());
-  
 app.use(requestLogger);
 
-app.get('/v1/notes', (req, res, next) => {
-  const { searchTerm } = req.query;
+app.use('/v1', notesRouter);
 
-  notes.filter(searchTerm, (err, list) => {
-    if (err) {
-      return next(err);
-    }
-    res.json(list);
-  });
-});
-
-app.get('/v1/notes/:id', (req, res, next) => {
-  let id = req.params.id;
-  notes.find(id, (err, item) => {
-    if (err) {
-      return next(err);
-    }
-    if (item) {
-      res.json(item);
-    }
-  });
-});
-
-app.put('/v1/notes/:id', (req, res, next) => {
-  const id = req.params.id;
-  //=======================Never trust users - validate input===
-  const updateObj = {};
-  const updateFields = ['title', 'content'];
-
-  updateFields.forEach(field => {
-    if (field in req.body) {
-      updateObj[field] = req.body[field];
-    }
-  });
-
-  notes.update(id, updateObj, (err, item) => {
-    if (err) {
-      return next(err);
-    }
-    if (item) {
-      res.json(item);
-    }
-    else {
-      next();
-    }
-  });
-});
 
 app.use(function (req, res, next) {
   var err = new Error('Not Found');
