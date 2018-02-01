@@ -22,6 +22,7 @@ router.get('/notes', (req, res, next) => {
 router.get('/notes/:id', (req, res, next) => {
   let id = req.params.id;
   notes.find(id, (err, item) => {
+    console.log(item);
     if (err) {
       return next(err);
     }
@@ -43,17 +44,15 @@ router.put('/notes/:id', (req, res, next) => {
     }
   });
 
-  notes.update(id, updateObj, (err, item) => {
-    if (err) {
-      return next(err);
-    }
-    if (item) {
-      res.json(item);
-    }
-    else {
-      next();
-    }
-  });
+  notes.update(id, updateObj)
+    .then(item => {
+      if (item) {
+        res.json(item);
+      } else {
+        next();
+      }
+    }) 
+    .catch(err => next(err));
 });
 
 router.post('/notes', (req, res, next) => {
@@ -66,27 +65,27 @@ router.post('/notes', (req, res, next) => {
     return next(err);
   }
 
-  notes.create(newItem, (err, item) => {
-    if (err) {
-      return next(err);
-    }
-    if (item) {
-      res.location(`http://${req.headers.host}/notes/${item.id}`).status(201).json(item);
-    } else {
-      next();
-    }
-  });
+  notes.create(newItem) 
+    .then(item => {
+      if (item) {
+        res.location(`http://${req.headers.host}/notes/${item.id}`).status(201).json(item);
+      } else {
+        next();
+      }
+    })
+    .catch(err => next(err));
 });
+  
 
 router.delete('/notes/:id', (req, res, next) => {
   console.log(req.params);
-  notes.delete(req.params.id, (err, len) => {
-    if (err) {
-      return next(err);
-    } 
-    return res.status(204).end();
-  }
-  );
+  notes.delete(req.params.id)
+    .then(len => {
+      if(len) {
+        res.status(204).end();
+      }
+    }) 
+    .catch(err => next(err));
 }); 
 
 module.exports = router;

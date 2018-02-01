@@ -4,10 +4,9 @@
 const noteful = (function () {
 
   function render() {
-
+    console.log(store.currentNote);
     const notesList = generateNotesList(store.notes, store.currentNote);
     $('.js-notes-list').html(notesList);
-
     const editForm = $('.js-note-edit-form');
     editForm.find('.js-note-title-entry').val(store.currentNote.title);
     editForm.find('.js-note-content-entry').val(store.currentNote.content);
@@ -36,24 +35,34 @@ const noteful = (function () {
   function findAndDelete(id) {
     store.notes = store.notes.filter(notes => notes.id !== id);
   }
+
+  function searchAndUpdate() {
+    api.search(store.currentSearchTerm)
+      .then(updateResult => {
+        store.notes = updateResult;
+        render();
+      });
+  }
+
   /**
    * EVENT LISTENERS AND HANDLERS
    */
+  //Added Promise - Works
   function handleNoteItemClick() {
     $('.js-notes-list').on('click', '.js-note-show-link', event => {
       event.preventDefault();
-
+      console.log('clicking');
       const noteId = getNoteIdFromElement(event.currentTarget);
 
-      api.details(noteId, response => {
-        store.currentNote = response;
+      api.details(noteId).then(result => {
+        console.log(result);
+        store.currentNote = result;
         render();
       });
-
     });
   }
 
-  
+  //Added promise - Works
   function handleNoteSearchSubmit() {
     $('.js-notes-search-form').on('submit', event => {
       event.preventDefault();
@@ -61,13 +70,14 @@ const noteful = (function () {
       const searchTerm = $('.js-note-search-entry').val();
       store.currentSearchTerm =  searchTerm ? { searchTerm } : {};
       
-      api.search(store.currentSearchTerm, response => {
-        store.notes = response;
+      api.search(store.currentSearchTerm).then(result => {
+        store.notes = result;
         render();
-      });
+      }); 
     });
   }
   
+  //Added promise - Works?
   function handleNoteFormSubmit() {
     $('.js-note-edit-form').on('submit', function (event) {
       event.preventDefault();
@@ -79,24 +89,20 @@ const noteful = (function () {
         title: editForm.find('.js-note-title-entry').val(),
         content: editForm.find('.js-note-content-entry').val(),
       };
-      
       if (store.currentNote.id) {
-        api.update(store.currentNote.id, noteObj, updateResponse => {
-          store.currentNote = updateResponse;
-
-          api.search(store.currentSearchTerm, updateResponse => {
-            store.notes = updateResponse;
-            render();
+        api.update(store.currentNote.id, noteObj)
+          .then(updateResult => {
+            store.currentNote = updateResult;
+            searchAndUpdate();
           });
-        });
       } else {
-        api.create(noteObj, updateResponse => {
-          store.notes = updateResponse;
-          render();
-        });
-      }
+        api.create(noteObj).then(updateResult => {
+          store.notes = updateResult;
+          searchAndUpdate();
+        });}
     });
   }
+  
   
   function handleNoteStartNewSubmit() {
     $('.js-start-new-note-form').on('submit', event => {
@@ -105,16 +111,19 @@ const noteful = (function () {
       render();
     });
   }
+
   
+  //Added promise - works?
   function handleDelete() {
     $('.js-notes-list').on('click', '.js-note-delete-button', event => {
       console.log('delete button clicked');
       const id = getNoteIdFromElement(event.currentTarget);
       console.log(`id is ${id}`);
-      api.delete(id, () => {
-        findAndDelete(id);
-        render();
-      });
+      api.delete(id)
+        .then(() => {
+          searchAndUpdate();
+          render();
+        });
     });
   }
 
@@ -128,8 +137,9 @@ const noteful = (function () {
   
   // This object contains the only exposed methods from this module:
   return {
-    render: render,
-    bindEventListeners: bindEventListeners,
+    searchAndUpdate,
+    render,
+    bindEventListeners
   };
   
 }());

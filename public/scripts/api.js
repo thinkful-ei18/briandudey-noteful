@@ -5,54 +5,50 @@
 
 const api = {
   
-  search: function (query, callback) {
-    $.ajax({
+  search: function (query) {
+    return  $.ajax({
       type: 'GET',
       url: '/v1/notes/',
       dataType: 'json',
-      data: query,
-      success: callback
+      data: query
     });
   },
 
-  create: function (obj, callback) {
-    $.ajax({
+  create: function (obj) {
+    return $.ajax({
       type: 'POST',
       url: '/v1/notes',
       contentType: 'application/json',
       dataType: 'json',
       processData: false,
-      data: JSON.stringify(obj),
-      success: callback
+      data: JSON.stringify(obj)
     });
   },
   
-  details: function (id, callback) {
-    $.ajax({
+  details: function (id) {
+    console.log(id);
+    return $.ajax({
       type: 'GET',
       dataType: 'json',
-      url: `/v1/notes/${id}`,
-      success: callback
+      url: `/v1/notes/${id}`
     });
   },
   
-  update: function (id, obj, callback) {
-    $.ajax({
+  update: function (id, obj) {
+    return $.ajax({
       type: 'PUT',
       url: `/v1/notes/${id}`,
       contentType: 'application/json',
       dataType: 'json',
-      data: JSON.stringify(obj),
-      success: callback
+      data: JSON.stringify(obj)
     });
   },
 
-  delete: function (id, callback) {
-    $.ajax ({
+  delete: function (id) {
+    return  $.ajax ({
       type: 'DELETE',
       url: `/v1/notes/${id}`,
-      contentType: 'application/json',
-      success: callback
+      contentType: 'application/json'
     });
   }
 }; 
